@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Spring 通过 XML 文件注册并管理 Bean 之间的依赖关系
+id	是一个 Bean 的唯一标识符，Spring 容器对 Bean 的配置和管理都通过该属性完成。
+class 指定需要实例化 Bean 的实全限定类名（包名+类名）
+property 是	<bean>元素的子元素，用于调用 Bean 实例中的 Set 方法完成属性赋值，从而完成依赖注入。该元素的 name 属性指定 Bean 实例中的相应属性名
+ref	用来给 bean 属性指定某个 Bean 实例的引用
+参考资料: http://c.biancheng.net/view/4254.html
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+            ">
+    <!-- 由Spring容器创建该类的实例对象 -->
+    <!-- 在 Spring 容器中创建一个 id 为 personDao 的 bean 实例，class 指定需要实例化 Bean 的实全限定类名（包名+类名）-->
+    <bean id="helloDao" class="com.lcm.helloworld.HelloDaoImpl" />
+    <bean id="helloService" class="com.lcm.helloworld.HelloServiceImpl">
+        <!-- 依赖注入，helloService依赖helloDao实例，将helloDao实例注入helloService实例中 -->
+        <property name="helloDao" ref="helloDao"/>
+    </bean>
+</beans>
+<!--Spring 的配置文件名称是可以自定义的，通常情况下，都会将配置文件命名为 applicationContext.xml（或 bean.xml）。-->
+<!--Spring 将管理对象称为 Bean。ApplicationContext 都是通过 XML 配置文件加载 Bean 的。-->

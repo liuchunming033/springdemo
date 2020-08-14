@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Spring 通过 XML 文件注册并管理 Bean 之间的依赖关系
+id	是一个 Bean 的唯一标识符，Spring 容器对 Bean 的配置和管理都通过该属性完成。
+class 指定需要实例化 Bean 的实全限定类名（包名+类名）
+property 是	<bean>元素的子元素，用于调用 Bean 实例中的 Set 方法完成属性赋值，从而完成依赖注入。该元素的 name 属性指定 Bean 实例中的相应属性名
+ref	用来给 bean 属性指定某个 Bean 实例的引用
+factory-method 用来设置实例化Bean的工厂方法
+factory-bean属性指定一个实例工厂
+参考资料http://c.biancheng.net/view/4254.html
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/aop
+            http://www.springframework.org/schema/aop/spring-aop.xsd
+            http://www.springframework.org/schema/tx
+            http://www.springframework.org/schema/tx/spring-tx.xsd
+            ">
+    <!-- 由Spring容器创建该类的实例对象 -->
+    <!-- 在 Spring 容器中创建一个 id 为 personDao 的 bean 实例，class 指定需要实例化 Bean 的实全限定类名（包名+类名）-->
+    <bean id="personDao" class="com.lcm.ioc.PersonDaoImpl" />
+    <bean id="personService" class="com.lcm.ioc.PersonServiceImpl">
+        <!-- 依赖注入，personService依赖personDao实例，将personDao实例注入personService实例中 -->
+        <property name="personDao" ref="personDao"/>
+    </bean>
+    <bean id="person1" class="com.lcm.instance.Person1" />
+    <bean id="person2" class="com.lcm.instance.MyBeanStaticFactory" factory-method="createBean" />
+
+    <!-- 配置实例工厂-->
+    <bean id="myBeanFactory" class="com.lcm.instance.MyBeanFactory" />
+    <!--factory-bean属性指定一个实例工厂id为myBeanFactory的，factory-method属性确定使用工厂中的哪个方法-->
+    <bean id="person3" factory-bean="myBeanFactory" factory-method="createBean" />
+    <!--    使用 singleton 定义的 Bean 在 Spring 容器中只有一个实例，默认就是这样的-->
+
+    <bean id="person" class="com.lcm.scope.Person" scope="singleton"/>
+    <!--    每次请求该 Bean 时都会创建一个新的 Bean 实例-->
+    <bean id="persons" class="com.lcm.scope.Person" scope="prototype"/>
+
+    <!-- 使用设值注入方式装配Person实例，调用 Bean 实例中的 setXxx() 方法完成属性赋值。 -->
+    <bean id="personSetterInjection" class="com.lcm.scope.Person">
+        <property name="name" value="zhangsan" />
+        <property name="age" value="20" />
+    </bean>
+
+    <!-- 使用构造方法装配Person实例 ， constructor-arg元素用于定义构造方法的参数-->
+    <bean id="personConstructorInjection" class="com.lcm.scope.Person">
+        <constructor-arg index="0" value="lisi" />
+        <constructor-arg index="1" value="21" />
+    </bean>
+
+    <!--使用context命名空间，通知spring扫描指定目录base-package，进行注解的解析-->
+    <context:component-scan base-package="com.lcm.annotation" />
+
+    <bean id="catDao" class="com.lcm.annotation.CatDaoImpl" />
+    <bean id="catService" class="com.lcm.annotation.CatServiceImpl" autowire="byName" />
+    <bean id="catAction" class="com.lcm.annotation.CatAction" autowire="byName" />
+
+<!--    Spring通知类型及使用ProxyFactoryBean创建AOP代理-->
+    <!--目标类 -->
+    <bean id="customerDao" class="com.lcm.dao.CustomerDaoImpl" />
+    <!-- 通知 advice -->
+    <bean id="springAspect" class="com.lcm.factorybean.SpringAspect" />
+    <!--生成代理对象 -->
+    <bean id="customerDaoProxy"
+          class="org.springframework.aop.framework.ProxyFactoryBean">
+        <!--代理实现的接口 -->
+        <property name="proxyInterfaces" value="com.lcm.dao.CustomerDao" />
+        <!--代理的目标对象 -->
+        <property name="target" ref="customerDao" />
+        <!--用通知增强目标 -->
+        <property name="interceptorNames" value="springAspect" />
+        <!-- 如何生成代理，true:使用cglib; false :使用jdk动态代理 -->
+        <property name="proxyTargetClass" value="true" />
+    </bean>
+
+    <!--目标类 -->
+    <bean id="customAspectJDao" class="com.lcm.dao.CustomerDaoImpl" />
+    <!--切面类 -->
+    <bean id="myAspectJ" class="com.lcm.aspectj.xml.AspectJ" />
+    <!--AOP 编程 -->
+    <aop:config>
+        <aop:aspect ref="myAspectJ">
+            <!-- 配置切入点，通知最后增强哪些方法,这里指的是增强com.lcm.dao 包下所有的方法。 -->
+            <aop:pointcut expression="execution (* com.lcm.dao.*.*(..))" id="myPointCut" />
+            <!--前置通知，关联通知 Advice和切入点PointCut，method用来指定通知，pointcut-ref 属性用于指定切入点，也就是要增强的方法 -->
+            <aop:before method="myBefore" pointcut-ref="myPointCut" />
+            <!--后置通知，在方法返回之后执行，就可以获得返回值returning 属性 -->
+            <aop:after-returning method="myAfterReturning" pointcut-ref="myPointCut" returning="returnVal" />
+            <!--环绕通知 -->
+            <aop:around method="myAround" pointcut-ref="myPointCut" />
+            <!--抛出通知：用于处理程序发生异常，可以接收当前方法产生的异常 -->
+            <!-- *注意：如果程序没有异常，则不会执行增强 -->
+            <!-- * throwing属性：用于设置通知第二个参数的名称，类型Throwable -->
+            <aop:after-throwing method="myAfterThrowing" pointcut-ref="myPointCut" throwing="e" />
+            <!--最终通知：无论程序发生任何事情，都将执行 -->
+            <aop:after method="myAfter" pointcut-ref="myPointCut" />
+        </aop:aspect>
+    </aop:config>
+
+    <!--扫描含com.mengma包下的所有注解-->
+    <context:component-scan base-package="com.lc.aspectj"/>
+    <context:component-scan base-package="com.lcm.dao"/>
+    <!-- 使切面开启自动代理 -->
+    <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+
+    <!-- 加载properties文件 -->
+    <context:property-placeholder location="classpath:c3p0-db.properties" />
+    <!-- 配置数据源，读取properties文件信息 -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${jdbc.driverClass}" />
+        <property name="jdbcUrl" value="${jdbc.jdbcUrl}" />
+        <property name="user" value="${jdbc.user}" />
+        <property name="password" value="${jdbc.password}" />
+    </bean>
+    <!-- 配置jdbc模板 -->
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    <!-- 配置dao -->
+    <bean id="socDao" class="com.lcm.jdbc.dao.SocDaoImpl">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+    </bean>
+    <!-- 配置service -->
+    <bean id="socService" class="com.lcm.jdbc.service.SocServiceImpl">
+        <property name="socDao" ref="socDao" />
+    </bean>
+    <!-- 事务管理器，依赖于数据源 -->
+    <bean id="txManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    <!-- 注册事务管理驱动 -->
+    <tx:annotation-driven transaction-manager="txManager"/>
+
+</beans>
+<!--Spring 的配置文件名称是可以自定义的，通常情况下，都会将配置文件命名为 applicationContext.xml（或 bean.xml）。-->
+<!--Spring 将管理对象称为 Bean。ApplicationContext 都是通过 XML 配置文件加载 Bean 的。-->

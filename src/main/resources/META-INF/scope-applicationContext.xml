@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Spring 通过 XML 文件注册并管理 Bean 之间的依赖关系
+id	是一个 Bean 的唯一标识符，Spring 容器对 Bean 的配置和管理都通过该属性完成。
+class 指定需要实例化 Bean 的实全限定类名（包名+类名）
+property 是	<bean>元素的子元素，用于调用 Bean 实例中的 Set 方法完成属性赋值，从而完成依赖注入。该元素的 name 属性指定 Bean 实例中的相应属性名
+ref	用来给 bean 属性指定某个 Bean 实例的引用
+factory-method 用来设置实例化Bean的工厂方法
+factory-bean属性指定一个实例工厂
+参考资料http://c.biancheng.net/view/4254.html
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+            ">
+
+    <bean id="person" class="com.lcm.scope.Person" scope="singleton"/>
+    <!--    每次请求该 Bean 时都会创建一个新的 Bean 实例-->
+    <bean id="persons" class="com.lcm.scope.Person" scope="prototype"/>
+
+</beans>

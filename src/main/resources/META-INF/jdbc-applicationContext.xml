@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Spring 通过 XML 文件注册并管理 Bean 之间的依赖关系
+id	是一个 Bean 的唯一标识符，Spring 容器对 Bean 的配置和管理都通过该属性完成。
+class 指定需要实例化 Bean 的实全限定类名（包名+类名）
+property 是	<bean>元素的子元素，用于调用 Bean 实例中的 Set 方法完成属性赋值，从而完成依赖注入。该元素的 name 属性指定 Bean 实例中的相应属性名
+ref	用来给 bean 属性指定某个 Bean 实例的引用
+factory-method 用来设置实例化Bean的工厂方法
+factory-bean属性指定一个实例工厂
+参考资料http://c.biancheng.net/view/4254.html
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/tx
+            http://www.springframework.org/schema/tx/spring-tx.xsd
+            ">
+
+
+    <!-- 加载properties文件 -->
+    <context:property-placeholder location="classpath:c3p0-db.properties" />
+    <!-- 配置数据源，读取properties文件信息 -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${jdbc.driverClass}" />
+        <property name="jdbcUrl" value="${jdbc.jdbcUrl}" />
+        <property name="user" value="${jdbc.user}" />
+        <property name="password" value="${jdbc.password}" />
+    </bean>
+    <!-- 配置jdbc模板，需要将 dataSource 注入 jdbcTemplate 中 -->
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    <!-- 配置dao，要使用 jdbcTemplate，也需要将 jdbcTemplate 注入使用类中 -->
+    <bean id="socDao" class="com.lcm.jdbc.dao.SocDaoImpl">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+    </bean>
+    <!--用 AOP 注解方式开发时，指定扫描哪些包下的注解，扫描含com.lcm.aspectj.annotation包下的所有注解-->
+<!--        <context:component-scan base-package="com.lcm.jdbc.service.SocServiceImpl"/>-->
+    <!-- 配置service -->
+    <bean id="socService" class="com.lcm.jdbc.service.SocServiceImpl">
+        <property name="socDao" ref="socDao" />
+    </bean>
+    <!-- 事务管理器，依赖于数据源 -->
+    <bean id="txManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    <!-- 注册事务管理驱动  Annotation 注解的方式实现声明式事务管理。-->
+    <tx:annotation-driven transaction-manager="txManager"/>
+
+</beans>
+<!--Spring 的配置文件名称是可以自定义的，通常情况下，都会将配置文件命名为 applicationContext.xml（或 bean.xml）。-->
+<!--Spring 将管理对象称为 Bean。ApplicationContext 都是通过 XML 配置文件加载 Bean 的。-->
