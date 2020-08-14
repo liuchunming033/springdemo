@@ -1,6 +1,6 @@
-1. 资源文件夹的所有内容都复制到输出文件夹中
-在构建过程中，资源文件夹的所有内容都复制到输出文件夹中
+
 在main下新建文件夹resources用于存放资源文件, 在resources上右键，选择mark directory as 选中Resources Root
+
 # 1. 安装Spring依赖
 <!--添加Spring框架，系统会自动的下载所需的Spring依赖包spring-core,spring-expression,spring-aop以及spring-beans-->
         <dependency>
