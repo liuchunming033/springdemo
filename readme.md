@@ -39,6 +39,7 @@
             <version>1.7.25</version>
         </dependency>
 配置日志格式logback.xml放到resources资源目录下。
+另外，为了使用@Slf4j注解，IDEA要安装Lombok的插件，pom.xml中要安装Lombok的依赖。
 # 3. 第一个Spring项目
 
 代码：package com.lcm.helloworld;

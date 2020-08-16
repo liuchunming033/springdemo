@@ -1,13 +1,11 @@
 package com.lcm.scope;
 
-import com.lcm.instance.TestInstance;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+@Slf4j
 public class TestScope {
-    private static Logger log= LoggerFactory.getLogger(TestInstance.class);//括号里面放的是当前类的class文件。
 
     public static void main(String[] args) {
         testSingleton();
